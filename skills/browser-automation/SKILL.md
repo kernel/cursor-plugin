@@ -1,6 +1,6 @@
 ---
 name: browser-automation
-description: Build browser automations with Kernel cloud browsers. Use when writing Playwright scripts, automating websites, or connecting to remote browsers via CDP.
+description: Browse websites, open a browser, automate a website, navigate to a URL, click buttons, fill forms, and scrape pages using Kernel cloud browsers with Playwright and CDP.
 ---
 
 # Browser Automation with Kernel

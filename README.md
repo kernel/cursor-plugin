@@ -1,6 +1,6 @@
-# Kernel Plugin for Cursor
+# Kernel Browse — Cursor Plugin
 
-Cloud browsers for AI agents. Launch, automate, and manage browsers in the cloud directly from Cursor.
+Browse the web, scrape pages, and automate browsers in the cloud. Kernel gives AI agents instant access to cloud browsers with stealth mode, proxies, Playwright execution, and persistent profiles — no local Chrome needed.
 
 ## What's Included
 
@@ -20,7 +20,7 @@ Connects Cursor to Kernel's cloud browser platform. Create browsers, run Playwri
 
 ## Install
 
-Search for **Kernel** in the Cursor plugin marketplace and install it.
+Search for **Kernel Browse** in the Cursor plugin marketplace and install it.
 
 ## Setup
 

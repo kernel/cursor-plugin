@@ -1,8 +1,8 @@
 {
-  "name": "kernel",
-  "displayName": "Kernel",
+  "name": "kernel-browse",
+  "displayName": "Kernel Browse",
   "version": "1.0.0",
-  "description": "Cloud browsers for AI agents. Launch, automate, and manage browsers in the cloud with Kernel's MCP server, Playwright execution, and browser profiles.",
+  "description": "Browse the web, scrape pages, and automate browsers in the cloud. Kernel gives AI agents instant access to cloud browsers with stealth mode, proxies, Playwright execution, and persistent profiles — no local Chrome needed.",
   "author": {
     "name": "Kernel",
     "email": "support@onkernel.com"
@@ -12,18 +12,25 @@
   "license": "MIT",
   "logo": "assets/logo.svg",
   "keywords": [
-    "kernel",
-    "cloud-browsers",
+    "browse",
+    "browser",
     "browser-automation",
-    "playwright",
-    "mcp",
     "web-scraping",
-    "ai-agents"
+    "scrape",
+    "playwright",
+    "cloud-browser",
+    "mcp",
+    "ai-agents",
+    "screenshots",
+    "stealth",
+    "headless"
   ],
   "category": "developer-tools",
   "tags": [
+    "browse",
     "browser-automation",
     "cloud-browsers",
+    "web-scraping",
     "mcp",
     "developer-tools"
   ],

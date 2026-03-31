@@ -1,6 +1,6 @@
 ---
 name: web-scraping
-description: Scrape websites using Kernel cloud browsers with stealth mode, proxies, and Playwright. Use when building web scrapers or extracting data from websites.
+description: Scrape websites, extract data, crawl pages, and browse the web using Kernel cloud browsers with stealth mode, proxies, and Playwright.
 ---
 
 # Web Scraping with Kernel

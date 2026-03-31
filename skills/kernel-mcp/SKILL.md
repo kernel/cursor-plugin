@@ -1,6 +1,6 @@
 ---
 name: kernel-mcp
-description: Use Kernel's MCP tools to manage cloud browsers, run Playwright code, and manage profiles. Use when the Kernel MCP server is connected and you need to automate browsers.
+description: Manage cloud browsers, take screenshots, run Playwright scripts, and manage browser profiles using Kernel's MCP tools. Use when the Kernel MCP server is connected.
 ---
 
 # Using Kernel MCP Tools

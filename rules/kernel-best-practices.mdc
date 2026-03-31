@@ -1,5 +1,5 @@
 ---
-description: Best practices for writing Kernel browser automation code
+description: Best practices for browser automation, web scraping, and cloud browser management with Kernel — cleanup, stealth, timeouts, and error handling
 alwaysApply: false
 ---
 
