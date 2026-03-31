@@ -1,15 +1,13 @@
 ---
 name: browser-automation
-description: Browse websites, open a browser, automate a website, navigate to a URL, click buttons, fill forms, and scrape pages using Kernel cloud browsers with Playwright and CDP.
+description: browse websites, open a browser, automate a website, navigate to a URL, click buttons, fill forms, and scrape pages using kernel cloud browsers with playwright and CDP.
 ---
 
-# Browser Automation with Kernel
+# browser automation with kernel
 
-Kernel provides sandboxed Chrome browsers in the cloud. You connect to them via CDP (Chrome DevTools Protocol) using Playwright or any CDP-compatible library.
+kernel spins up cloud browsers in <30ms. you connect via CDP with playwright, automate, and clean up. no local chrome needed.
 
-## Creating a Browser
-
-### TypeScript
+## quick start — typescript
 
 ```typescript
 import Kernel from "@onkernel/sdk";
@@ -18,8 +16,8 @@ import { chromium } from "playwright";
 const kernel = new Kernel();
 
 const browser = await kernel.browsers.create({
-  stealth: true,         // avoid bot detection
-  timeout_seconds: 300,  // auto-cleanup after 5 min idle
+  stealth: true,        // adds recaptcha solver + residential proxy automatically
+  timeout_seconds: 300, // auto-cleanup after 5 min idle
 });
 
 const pw = await chromium.connectOverCDP(browser.cdp_ws_url);
@@ -27,14 +25,14 @@ const page = pw.contexts()[0].pages()[0];
 
 try {
   await page.goto("https://example.com");
-  // ... automate
+  // automate
 } finally {
   await pw.close();
   await kernel.browsers.deleteByID(browser.session_id);
 }
 ```
 
-### Python
+## quick start — python
 
 ```python
 from kernel import Kernel
@@ -49,84 +47,99 @@ async with async_playwright() as pw:
 
     try:
         await page.goto("https://example.com")
-        # ... automate
+        # automate
     finally:
         await browser_ctx.close()
         kernel.browsers.delete_by_id(browser.session_id)
 ```
 
-## Browser Options
+## browser options
 
-| Option | Type | Description |
+| option | type | what it does |
 |--------|------|-------------|
-| `stealth` | bool | Enable stealth mode to avoid bot detection |
-| `headless` | bool | Run without GUI (faster, no live view) |
-| `timeout_seconds` | int | Auto-delete after idle timeout (max 259200 = 72h) |
-| `proxy_id` | string | Route traffic through a proxy |
-| `profile_name` | string | Load saved cookies/logins from a profile |
-| `viewport_width` / `viewport_height` | int | Set browser window dimensions |
-| `kiosk_mode` | bool | Hide address bar and tabs in live view |
+| `stealth` | bool | automatically adds a recaptcha solver and residential proxy |
+| `headless` | bool | no GUI, faster, no live view |
+| `timeout_seconds` | int | auto-delete after idle (max 259200 = 72h) |
+| `proxy_id` | string | route traffic through a specific proxy |
+| `profile_name` | string | load saved cookies/logins from a profile |
+| `save_profile_changes` | bool | persist session changes back to profile on close |
+| `viewport_width` / `viewport_height` | int | browser window dimensions |
+| `kiosk_mode` | bool | hide address bar and tabs in live view |
 
-## Stealth Mode
+## stealth mode
 
-Use `stealth: true` when accessing sites with bot detection (Cloudflare, DataDome, PerimeterX, etc.). Stealth mode configures the browser to appear as a regular user.
+stealth mode automatically adds a recaptcha solver and residential proxy to your browsers. use it whenever you're hitting a real website — most production sites have some form of bot detection.
 
-For stronger anti-detection, combine stealth with a residential or ISP proxy:
+```typescript
+const browser = await kernel.browsers.create({ stealth: true });
+```
+
+for sites with aggressive detection, combine stealth with a higher-quality proxy:
 
 ```typescript
 const browser = await kernel.browsers.create({
   stealth: true,
-  proxy_id: "your-proxy-id",
+  proxy_id: "your-residential-proxy-id",
 });
 ```
 
-## Browser Profiles
+## managed auth
 
-Profiles persist cookies, localStorage, and session data across browser sessions. Use them for sites requiring login.
+kernel manages auth for your agents so you don't have to. managed auth is a standardized way for agents to log in and stay logged in across the internet.
+
+use browser profiles to persist authenticated sessions:
 
 ```typescript
-// Create a browser with a saved profile
 const browser = await kernel.browsers.create({
   profile_name: "my-github-session",
-  save_profile_changes: true, // persist changes back to profile on close
+  save_profile_changes: true,
 });
 ```
 
-## Playwright Execution API
+profiles persist cookies, localStorage, and session data across browser instances. log in once, reuse forever.
 
-For simple one-off scripts, use `execute_playwright_code` instead of the full SDK connection. This runs Playwright/TypeScript code directly against a browser session:
+## live view
+
+you can view sessions live and record them as mp4s for debugging. every browser gets a live view URL:
 
 ```typescript
-// Via MCP or API — no local Playwright installation needed
+const browser = await kernel.browsers.create({ stealth: true });
+console.log(browser.live_view_url); // watch the browser in real time
+```
+
+## playwright execution api
+
+for one-off scripts, use `execute_playwright_code` — runs playwright/typescript directly against a browser session. no local playwright installation needed.
+
+```typescript
 const result = await kernel.executePlaywrightCode({
   session_id: browser.session_id,
   code: `
     await page.goto("https://example.com");
-    const title = await page.title();
-    return title;
+    return await page.title();
   `,
 });
 ```
 
-## Cleanup
+## sdk vs playwright execution api
 
-Always delete browsers when done. Use `try/finally` blocks to ensure cleanup even on errors. Set `timeout_seconds` as a safety net so abandoned browsers don't run indefinitely.
+| scenario | use |
+|----------|-----|
+| complex multi-step automations | sdk + CDP connection |
+| simple data extraction | playwright execution api |
+| need local file access | sdk + CDP connection |
+| serverless / no local playwright | playwright execution api |
+| long-running sessions (up to 72h) | sdk + CDP connection |
+
+## cleanup
+
+always delete browsers when done. use `try/finally` to ensure cleanup. set `timeout_seconds` as a safety net — kernel doesn't charge for idle time, but you should still clean up.
 
 ```typescript
 const browser = await kernel.browsers.create({ timeout_seconds: 300 });
 try {
-  // ... work
+  // work
 } finally {
   await kernel.browsers.deleteByID(browser.session_id);
 }
 ```
-
-## When to Use SDK vs Playwright Execution API
-
-| Scenario | Approach |
-|----------|----------|
-| Complex multi-step automations | SDK + CDP connection |
-| Simple data extraction | Playwright Execution API |
-| Need local file access | SDK + CDP connection |
-| Serverless / no local Playwright | Playwright Execution API |
-| Long-running sessions | SDK + CDP connection |

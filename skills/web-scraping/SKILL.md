@@ -1,13 +1,13 @@
 ---
 name: web-scraping
-description: Scrape websites, extract data, crawl pages, and browse the web using Kernel cloud browsers with stealth mode, proxies, and Playwright.
+description: scrape websites, extract data, crawl pages, and browse the web using kernel cloud browsers with stealth mode, proxies, and playwright.
 ---
 
-# Web Scraping with Kernel
+# web scraping with kernel
 
-Kernel cloud browsers give you real Chrome instances for scraping sites that block traditional HTTP scrapers. Each browser runs in an isolated VM with full JavaScript rendering.
+kernel gives you real chrome instances in the cloud for scraping sites that block traditional HTTP scrapers. browsers spin up in <30ms, run in isolated VMs with full javascript rendering, and sessions can last up to 72 hours.
 
-## Basic Scraping Pattern
+## basic scraping pattern
 
 ```typescript
 import Kernel from "@onkernel/sdk";
@@ -15,7 +15,7 @@ import { chromium } from "playwright";
 
 const kernel = new Kernel();
 const browser = await kernel.browsers.create({
-  stealth: true,
+  stealth: true,         // adds recaptcha solver + residential proxy
   timeout_seconds: 120,
 });
 
@@ -40,62 +40,54 @@ try {
 }
 ```
 
-## Avoiding Bot Detection
+## stealth mode
 
-### Stealth Mode
+stealth mode automatically adds a recaptcha solver and residential proxy to your browsers. we solve captchas and manage proxies to help you see fewer of them.
 
-Always enable `stealth: true` for scraping. This configures the browser to pass common bot detection checks (navigator properties, WebGL fingerprinting, etc.).
-
-### Proxies
-
-For sites with IP-based blocking, add a proxy. Proxy quality for avoiding detection, best to worst:
-
-1. **Mobile** — highest quality, mobile IP ranges
-2. **Residential** — home ISP IPs, very hard to detect
-3. **ISP** — datacenter IPs registered to ISPs
-4. **Datacenter** — cheapest, most likely to be blocked
+always use `stealth: true` for scraping. it handles:
+- navigator property spoofing
+- webgl fingerprint randomization
+- automatic captcha solving
+- residential proxy routing
 
 ```typescript
-// Create a proxy first, then reference it
+const browser = await kernel.browsers.create({ stealth: true });
+```
+
+## proxies
+
+for sites with IP-based blocking, add a dedicated proxy. quality ranking for bot detection avoidance:
+
+1. **mobile** — highest quality, mobile IP ranges
+2. **residential** — home ISP IPs, very hard to detect
+3. **ISP** — datacenter IPs registered to ISPs
+4. **datacenter** — cheapest, most likely to be blocked
+
+```typescript
 const browser = await kernel.browsers.create({
   stealth: true,
   proxy_id: "your-proxy-id",
-  timeout_seconds: 120,
 });
 ```
 
-### Behavioral Patterns
+stealth mode already includes a residential proxy. add a dedicated proxy only if you need geo-targeting or the default proxy isn't sufficient.
 
-Make your scraper behave like a human:
+## handling dynamic content
 
-```typescript
-// Add random delays between actions
-await page.waitForTimeout(1000 + Math.random() * 2000);
-
-// Scroll naturally before extracting content
-await page.evaluate(() => window.scrollTo({ top: 500, behavior: "smooth" }));
-await page.waitForTimeout(500);
-```
-
-## Handling Dynamic Content
-
-### Wait for content to load
+### wait for elements
 
 ```typescript
-// Wait for specific elements
 await page.waitForSelector(".product-list .item", { timeout: 10000 });
-
-// Wait for network to settle
 await page.goto(url, { waitUntil: "networkidle" });
 
-// Wait for a specific API response
+// wait for a specific API response
 const response = await page.waitForResponse(resp =>
   resp.url().includes("/api/products") && resp.status() === 200
 );
 const data = await response.json();
 ```
 
-### Infinite scroll
+### infinite scroll
 
 ```typescript
 async function scrollToBottom(page) {
@@ -110,7 +102,7 @@ async function scrollToBottom(page) {
 }
 ```
 
-### Pagination
+### pagination
 
 ```typescript
 const allItems = [];
@@ -128,15 +120,13 @@ while (true) {
   if (items.length === 0) break;
   allItems.push(...items);
   pageNum++;
-
-  // Respectful delay between pages
   await page.waitForTimeout(1000 + Math.random() * 1000);
 }
 ```
 
-## Scaling with Concurrent Browsers
+## scaling with concurrent browsers
 
-Launch multiple browsers in parallel for faster scraping:
+spin up multiple browsers in parallel. kernel handles the infra — you just create and connect.
 
 ```typescript
 const urls = ["https://example.com/1", "https://example.com/2", "https://example.com/3"];
@@ -161,11 +151,11 @@ const results = await Promise.all(
 );
 ```
 
-For high-volume scraping, use Kernel browser pools to pre-warm browsers and reduce startup latency.
+for high-volume scraping, use browser pools to pre-warm browsers and cut startup latency even further.
 
-## Extracting Structured Data
+## extracting structured data
 
-### Tables
+### tables
 
 ```typescript
 const tableData = await page.$$eval("table tbody tr", rows =>
@@ -176,7 +166,7 @@ const tableData = await page.$$eval("table tbody tr", rows =>
 );
 ```
 
-### JSON-LD / Structured Data
+### JSON-LD / structured data
 
 ```typescript
 const structuredData = await page.$$eval(
@@ -185,10 +175,9 @@ const structuredData = await page.$$eval(
 );
 ```
 
-## Respectful Scraping
+## respectful scraping
 
-- Add delays between requests to avoid overwhelming servers
-- Respect `robots.txt` directives
-- Set reasonable concurrency limits
-- Use caching to avoid re-fetching unchanged pages
-- Include a meaningful user agent or contact info when scraping at scale
+- add delays between requests
+- respect `robots.txt`
+- set reasonable concurrency limits
+- kernel doesn't charge for idle time, but clean up browsers when done

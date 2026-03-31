@@ -1,48 +1,48 @@
 ---
-description: Best practices for browser automation, web scraping, and cloud browser management with Kernel — cleanup, stealth, timeouts, and error handling
+description: best practices for browser automation, web scraping, and cloud browser management with kernel — cleanup, stealth, timeouts, and error handling
 alwaysApply: false
 ---
 
-# Kernel Best Practices
+# kernel best practices
 
-## Always clean up browsers
+## always clean up browsers
 
-Delete browsers when done. Use `try/finally` to ensure cleanup even on errors. Set `timeout_seconds` as a safety net.
+delete browsers when done. wrap everything in `try/finally`. set `timeout_seconds` as a safety net.
 
 ```typescript
 const browser = await kernel.browsers.create({ timeout_seconds: 300 });
 try {
-  // ... work
+  // work
 } finally {
   await kernel.browsers.deleteByID(browser.session_id);
 }
 ```
 
-## Use stealth mode for real websites
+## use stealth mode for real websites
 
-Enable `stealth: true` when accessing any website that might have bot detection. Most production websites do.
+stealth mode automatically adds a recaptcha solver and residential proxy. use `stealth: true` whenever you're hitting a real website — most production sites have bot detection.
 
-## Set timeouts
+## set timeouts
 
-Always set `timeout_seconds` when creating browsers. This prevents orphaned browsers from running indefinitely and incurring costs. Use the shortest timeout that allows your task to complete.
+always set `timeout_seconds`. sessions can run up to 72 hours max. use the shortest timeout that lets your task complete. kernel doesn't charge for idle time, but don't leave browsers running forever.
 
-## Use profiles for authenticated sessions
+## use profiles for auth
 
-Don't hard-code credentials in automation scripts. Use Kernel browser profiles to persist login sessions across browser instances.
+don't hardcode credentials. use browser profiles to persist login sessions. kernel manages auth so agents can log in and stay logged in across the internet.
 
-## Choose the right approach
+## pick the right tool
 
-- **Playwright Execution API** (`execute_playwright_code`): Best for simple, self-contained scripts that run against a single page. No local Playwright installation needed.
-- **SDK + CDP connection**: Best for complex multi-step automations, when you need local file access, or when running long sessions.
+- `execute_playwright_code`: quick, self-contained tasks. no local playwright needed.
+- sdk + CDP connection: complex multi-step automations, local file access, long sessions.
 
-## Handle errors gracefully
+## handle errors
 
-Wrap browser operations in try/catch blocks. Network errors, timeouts, and selector mismatches are common in browser automation. Always ensure browser cleanup runs regardless of errors.
+browser automation fails. network errors, selector mismatches, timeouts — expect them. always ensure browser cleanup runs in a `finally` block regardless of what goes wrong.
 
-## Use appropriate proxies
+## proxy quality matters
 
-For sites with IP-based blocking, use proxies. Quality ranking: mobile > residential > ISP > datacenter. Match proxy quality to the target site's detection sophistication.
+for sites with IP-based blocking: mobile > residential > ISP > datacenter. stealth mode includes a residential proxy by default. add a dedicated proxy only for geo-targeting or when the default isn't enough.
 
-## Don't leave browsers idle
+## don't hoard browsers
 
-Browsers consume resources. Create them when needed, use them promptly, and delete them when done. Avoid creating browsers far in advance of when they'll be used.
+create browsers when you need them, use them, delete them. don't spin up browsers in advance "just in case."

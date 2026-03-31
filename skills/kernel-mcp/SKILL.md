@@ -1,65 +1,62 @@
 ---
 name: kernel-mcp
-description: Manage cloud browsers, take screenshots, run Playwright scripts, and manage browser profiles using Kernel's MCP tools. Use when the Kernel MCP server is connected.
+description: manage cloud browsers, take screenshots, run playwright scripts, and manage browser profiles using kernel's MCP tools. use when the kernel MCP server is connected.
 ---
 
-# Using Kernel MCP Tools
+# kernel mcp tools
 
-When the Kernel MCP server is connected, you have direct access to cloud browser management tools. Use these to create, automate, and manage browsers without writing SDK code.
+when the kernel mcp server is connected, you can create, automate, and manage cloud browsers directly. browsers spin up in <30ms.
 
-## Available Tools
+## tools
 
-### Browser Management
+**browsers:**
+- `create_browser` — launch a cloud browser. returns session ID, CDP websocket URL, and live view URL.
+- `get_browser` / `list_browsers` — check browser status
+- `delete_browser` — terminate a browser session
 
-- **`create_browser`** — Launch a new cloud browser. Returns session ID, CDP WebSocket URL, and live view URL.
-- **`get_browser`** — Get details about a specific browser session.
-- **`list_browsers`** — List all active browser sessions.
-- **`delete_browser`** — Terminate a browser session.
+**automation:**
+- `execute_playwright_code` — run playwright/typescript against a browser. `page` object is already in scope. return values come back as the result.
+- `take_screenshot` — capture the current browser state
 
-### Automation
+**profiles:**
+- `setup_profile` — create or update a profile via guided live browser session
+- `list_profiles` / `delete_profile` — manage saved profiles
 
-- **`execute_playwright_code`** — Run Playwright/TypeScript code against a browser. The `page` object is pre-configured and in scope. Return values are sent back as the result.
-- **`take_screenshot`** — Capture a screenshot of the current browser state.
+**apps:**
+- `list_apps` — list deployed kernel apps
+- `invoke_action` — execute an app action
+- `get_deployment` / `list_deployments` — check deployment status
+- `get_invocation` — check action results
 
-### Profiles
+**docs:**
+- `search_docs` — search kernel documentation
 
-- **`setup_profile`** — Create or update a browser profile with a guided live session.
-- **`list_profiles`** — List all saved browser profiles.
-- **`delete_profile`** — Delete a browser profile.
+## common patterns
 
-### Apps
+### create → automate → screenshot → delete
 
-- **`list_apps`** — List deployed Kernel apps.
-- **`invoke_action`** — Execute an action on a deployed app.
-- **`get_deployment`** / **`list_deployments`** — Check deployment status.
-- **`get_invocation`** — Check action execution results.
+```
+1. create_browser with stealth: true, timeout_seconds: 300
+2. execute_playwright_code to navigate and interact
+3. take_screenshot to verify
+4. delete_browser to clean up
+```
 
-### Documentation
+always delete when done. always set timeout_seconds as a safety net.
 
-- **`search_docs`** — Search Kernel documentation for guides and API references.
+### execute_playwright_code
 
-## Common Workflows
-
-### Create a browser, automate it, then clean up
-
-1. Call `create_browser` with `stealth: true` if the target site has bot detection
-2. Use `execute_playwright_code` to run automation steps against the session
-3. Call `take_screenshot` to verify the result
-4. Call `delete_browser` to clean up
-
-### Execute Playwright code
-
-The `execute_playwright_code` tool runs TypeScript/Playwright code with a `page` object already in scope:
+`page` is already in scope. just write playwright code and return what you need:
 
 ```typescript
-// Navigate and extract data
 await page.goto("https://news.ycombinator.com");
-const titles = await page.$$eval(".titleline > a", els => els.slice(0, 5).map(e => e.textContent));
+const titles = await page.$$eval(".titleline > a", els =>
+  els.slice(0, 10).map(e => e.textContent)
+);
 return titles;
 ```
 
 ```typescript
-// Fill a form
 await page.goto("https://example.com/login");
 await page.fill("#email", "user@example.com");
 await page.fill("#password", "pass");
@@ -68,23 +65,27 @@ await page.waitForURL("**/dashboard");
 return await page.title();
 ```
 
-### Use profiles for authenticated sessions
+use this for quick, self-contained tasks. for complex multi-step flows, write sdk code instead.
 
-1. Call `setup_profile` with a profile name — this opens a live browser for manual login
-2. Log in to the target site manually through the live view
-3. Future browsers created with `profile_name` will have the saved session
+### profiles for persistent sessions
 
-### Deploy and invoke an app
+profiles let agents log in once and stay logged in. kernel manages auth so you don't have to.
 
-1. Use `list_apps` to see deployed apps
-2. Call `invoke_action` with the app name and action parameters
-3. Use `get_invocation` to poll for results
+1. `setup_profile` with a name — opens a live browser for login
+2. log in through the live view
+3. create future browsers with `profile_name` to reuse the session
 
-## Tips
+### stealth mode
 
-- Always set `timeout_seconds` when creating browsers to prevent orphaned sessions
-- Use `stealth: true` for any site that might block automated browsers
-- Call `delete_browser` when done — don't rely solely on timeouts
-- Use `execute_playwright_code` for quick tasks; use the SDK for complex multi-step flows
-- Screenshots are useful for verifying page state before extracting data
-- Use `search_docs` when you need guidance on a specific Kernel feature
+stealth mode automatically adds a recaptcha solver and residential proxy. use `stealth: true` for any real website. most production sites have bot detection.
+
+for sites with aggressive detection, create a proxy first (`residential` or `mobile` type), then pass `proxy_id` along with `stealth: true`.
+
+## tips
+
+- use `stealth: true` by default for real websites
+- always set `timeout_seconds` — sessions can run up to 72 hours max
+- delete browsers when done, don't just rely on timeouts
+- use `execute_playwright_code` for quick tasks, sdk for complex flows
+- take screenshots to verify page state before extracting data
+- use `search_docs` when you need help with a specific kernel feature

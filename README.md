@@ -1,34 +1,37 @@
-# Kernel Browse — Cursor Plugin
+# kernel browse
 
-Browse the web, scrape pages, and automate browsers in the cloud. Kernel gives AI agents instant access to cloud browsers with stealth mode, proxies, Playwright execution, and persistent profiles — no local Chrome needed.
+browser infrastructure for AI agents and web automations. cloud browsers in <30ms, stealth mode, managed auth, and playwright execution — right from cursor.
 
-## What's Included
+## what's included
 
-### MCP Server
+### mcp server
 
-Connects Cursor to Kernel's cloud browser platform. Create browsers, run Playwright scripts, manage profiles, and deploy apps — all through natural language in Cursor.
+connects cursor to kernel's cloud browser platform. no local chrome needed — browsers spin up in the cloud in <30ms.
 
-### Skills
+available tools:
+- **create_browser** — launch cloud browsers with stealth mode, proxies, custom viewports, and profiles
+- **execute_playwright_code** — run playwright/typescript against any browser session
+- **take_screenshot** — capture browser screenshots
+- **setup_profile** — save and reuse browser sessions with persistent cookies and logins
+- **search_docs** — search kernel documentation
 
-- **browser-automation** — Patterns for building browser automations with Kernel's TypeScript and Python SDKs, CDP connections, stealth mode, and profiles.
-- **kernel-mcp** — Guide for using Kernel's MCP tools to manage browsers, run Playwright code, and work with profiles and apps.
-- **web-scraping** — Web scraping patterns including bot detection avoidance, proxy configuration, dynamic content handling, and concurrent scraping.
+### skills
 
-### Rules
+- **browser-automation** — patterns for building browser automations with the kernel sdk and playwright
+- **kernel-mcp** — guide for using kernel's mcp tools effectively
+- **web-scraping** — scraping patterns with stealth mode and proxies
 
-- **kernel-best-practices** — Best practices for Kernel automation code: cleanup patterns, timeout management, stealth mode usage, and error handling.
+### rules
 
-## Install
+- **kernel-best-practices** — always clean up browsers, use stealth for bot detection, handle errors
 
-Search for **Kernel Browse** in the Cursor plugin marketplace and install it.
+## setup
 
-## Setup
+1. install from the cursor marketplace
+2. authenticate with your kernel account (oauth — opens in browser)
+3. start using kernel tools in cursor agent mode
 
-1. **Get a Kernel account** at [kernel.sh](https://kernel.sh)
-2. Install the plugin — the MCP server connects automatically via OAuth
-3. Start asking Cursor to create and automate cloud browsers
-
-For API key authentication, add your key to `mcp.json`:
+no api key needed for setup — oauth handles auth automatically. for CI/CD or headless environments, you can use an api key instead:
 
 ```json
 {
@@ -43,22 +46,12 @@ For API key authentication, add your key to `mcp.json`:
 }
 ```
 
-## Usage Examples
+## get started
 
-With the plugin installed, you can ask Cursor things like:
+- sign up at [kernel.sh](https://kernel.sh)
+- read the [docs](https://kernel.sh/docs)
+- check out the [typescript sdk](https://github.com/onkernel/kernel-typescript-sdk) and [python sdk](https://github.com/onkernel/kernel-python-sdk)
 
-- "Create a stealth browser and scrape the top 10 Hacker News posts"
-- "Set up a browser profile for my GitHub account"
-- "Take a screenshot of kernel.sh"
-- "Write a Playwright script that fills out a form on example.com"
-- "Deploy a Kernel app that checks a website every hour"
+## license
 
-## Documentation
-
-- [Kernel Docs](https://kernel.sh/docs)
-- [TypeScript SDK](https://github.com/onkernel/kernel-ts-sdk)
-- [Python SDK](https://github.com/onkernel/kernel-python-sdk)
-
-## License
-
-MIT
+mit

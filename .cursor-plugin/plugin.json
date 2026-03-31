@@ -2,7 +2,7 @@
   "name": "kernel-browse",
   "displayName": "Kernel Browse",
   "version": "1.0.0",
-  "description": "Browse the web, scrape pages, and automate browsers in the cloud. Kernel gives AI agents instant access to cloud browsers with stealth mode, proxies, Playwright execution, and persistent profiles — no local Chrome needed.",
+  "description": "browser infrastructure for AI agents and web automations. cloud browsers in <30ms, anti-bot stealth mode, managed auth, reusable sessions, and playwright execution — no local chrome needed.",
   "author": {
     "name": "Kernel",
     "email": "support@onkernel.com"
