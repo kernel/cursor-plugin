@@ -1,0 +1,32 @@
+{
+  "name": "kernel",
+  "displayName": "Kernel",
+  "version": "1.0.0",
+  "description": "Cloud browsers for AI agents. Launch, automate, and manage browsers in the cloud with Kernel's MCP server, Playwright execution, and browser profiles.",
+  "author": {
+    "name": "Kernel",
+    "email": "support@onkernel.com"
+  },
+  "homepage": "https://kernel.sh",
+  "repository": "https://github.com/kernel/cursor-plugin",
+  "license": "MIT",
+  "logo": "assets/logo.svg",
+  "keywords": [
+    "kernel",
+    "cloud-browsers",
+    "browser-automation",
+    "playwright",
+    "mcp",
+    "web-scraping",
+    "ai-agents"
+  ],
+  "category": "developer-tools",
+  "tags": [
+    "browser-automation",
+    "cloud-browsers",
+    "mcp",
+    "developer-tools"
+  ],
+  "skills": "./skills/",
+  "rules": "./rules/"
+}

@@ -1,0 +1,48 @@
+---
+description: Best practices for writing Kernel browser automation code
+alwaysApply: false
+---
+
+# Kernel Best Practices
+
+## Always clean up browsers
+
+Delete browsers when done. Use `try/finally` to ensure cleanup even on errors. Set `timeout_seconds` as a safety net.
+
+```typescript
+const browser = await kernel.browsers.create({ timeout_seconds: 300 });
+try {
+  // ... work
+} finally {
+  await kernel.browsers.deleteByID(browser.session_id);
+}
+```
+
+## Use stealth mode for real websites
+
+Enable `stealth: true` when accessing any website that might have bot detection. Most production websites do.
+
+## Set timeouts
+
+Always set `timeout_seconds` when creating browsers. This prevents orphaned browsers from running indefinitely and incurring costs. Use the shortest timeout that allows your task to complete.
+
+## Use profiles for authenticated sessions
+
+Don't hard-code credentials in automation scripts. Use Kernel browser profiles to persist login sessions across browser instances.
+
+## Choose the right approach
+
+- **Playwright Execution API** (`execute_playwright_code`): Best for simple, self-contained scripts that run against a single page. No local Playwright installation needed.
+- **SDK + CDP connection**: Best for complex multi-step automations, when you need local file access, or when running long sessions.
+
+## Handle errors gracefully
+
+Wrap browser operations in try/catch blocks. Network errors, timeouts, and selector mismatches are common in browser automation. Always ensure browser cleanup runs regardless of errors.
+
+## Use appropriate proxies
+
+For sites with IP-based blocking, use proxies. Quality ranking: mobile > residential > ISP > datacenter. Match proxy quality to the target site's detection sophistication.
+
+## Don't leave browsers idle
+
+Browsers consume resources. Create them when needed, use them promptly, and delete them when done. Avoid creating browsers far in advance of when they'll be used.
