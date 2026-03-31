@@ -1,48 +1,14 @@
 ---
-description: best practices for browser automation, web scraping, and cloud browser management with kernel — cleanup, stealth, timeouts, and error handling
+description: best practices for kernel cloud browser automation and web scraping
 alwaysApply: false
 ---
 
-# kernel best practices
-
-## always clean up browsers
-
-delete browsers when done. wrap everything in `try/finally`. set `timeout_seconds` as a safety net.
-
-```typescript
-const browser = await kernel.browsers.create({ timeout_seconds: 300 });
-try {
-  // work
-} finally {
-  await kernel.browsers.deleteByID(browser.session_id);
-}
-```
-
-## use stealth mode for real websites
-
-stealth mode automatically adds a recaptcha solver and residential proxy. use `stealth: true` whenever you're hitting a real website — most production sites have bot detection.
-
-## set timeouts
-
-always set `timeout_seconds`. sessions can run up to 72 hours max. use the shortest timeout that lets your task complete. kernel doesn't charge for idle time, but don't leave browsers running forever.
-
-## use profiles for auth
-
-don't hardcode credentials. use browser profiles to persist login sessions. kernel manages auth so agents can log in and stay logged in across the internet.
-
-## pick the right tool
-
-- `execute_playwright_code`: quick, self-contained tasks. no local playwright needed.
-- sdk + CDP connection: complex multi-step automations, local file access, long sessions.
-
-## handle errors
-
-browser automation fails. network errors, selector mismatches, timeouts — expect them. always ensure browser cleanup runs in a `finally` block regardless of what goes wrong.
-
-## proxy quality matters
-
-for sites with IP-based blocking: mobile > residential > ISP > datacenter. stealth mode includes a residential proxy by default. add a dedicated proxy only for geo-targeting or when the default isn't enough.
-
-## don't hoard browsers
-
-create browsers when you need them, use them, delete them. don't spin up browsers in advance "just in case."
+- always delete browsers when done. use try/finally to guarantee cleanup.
+- set `timeout_seconds` on every browser as a safety net. default is 60s — increase for longer tasks, max is 72h.
+- use `stealth: true` when accessing any site with bot detection. stealth mode adds a recaptcha solver and residential proxy automatically.
+- use browser profiles for sites requiring authentication. set `save_profile_changes: true` to persist session changes.
+- prefer the playwright execution API (`execute_playwright_code`) for simple one-off scripts. use the SDK + CDP connection for complex multi-step automations.
+- use `headless: true` for faster execution when you don't need to watch the browser via live view.
+- proxy quality for anti-detection, best to worst: mobile > residential > ISP > datacenter.
+- no charges for idle time — only for active browser usage.
+- never hardcode credentials in automation code. use kernel's managed auth or browser profiles instead.

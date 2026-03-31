@@ -1,54 +1,15 @@
 ---
 name: web-scraping
-description: scrape websites, extract data, crawl pages, and browse the web using kernel cloud browsers with stealth mode, proxies, and playwright.
+description: scrape websites, extract data, crawl pages, and browse the web at scale using kernel cloud browsers with stealth mode and proxies.
 ---
 
 # web scraping with kernel
 
-kernel gives you real chrome instances in the cloud for scraping sites that block traditional HTTP scrapers. browsers spin up in <30ms, run in isolated VMs with full javascript rendering, and sessions can last up to 72 hours.
-
-## basic scraping pattern
-
-```typescript
-import Kernel from "@onkernel/sdk";
-import { chromium } from "playwright";
-
-const kernel = new Kernel();
-const browser = await kernel.browsers.create({
-  stealth: true,         // adds recaptcha solver + residential proxy
-  timeout_seconds: 120,
-});
-
-const pw = await chromium.connectOverCDP(browser.cdp_ws_url);
-const page = pw.contexts()[0].pages()[0];
-
-try {
-  await page.goto("https://example.com/products", { waitUntil: "networkidle" });
-
-  const products = await page.$$eval(".product-card", cards =>
-    cards.map(card => ({
-      name: card.querySelector("h2")?.textContent?.trim(),
-      price: card.querySelector(".price")?.textContent?.trim(),
-      url: card.querySelector("a")?.href,
-    }))
-  );
-
-  return products;
-} finally {
-  await pw.close();
-  await kernel.browsers.deleteByID(browser.session_id);
-}
-```
+kernel cloud browsers let you scrape at scale with stealth mode, residential proxies, and up to 72-hour sessions. no charges for idle time.
 
 ## stealth mode
 
-stealth mode automatically adds a recaptcha solver and residential proxy to your browsers. we solve captchas and manage proxies to help you see fewer of them.
-
-always use `stealth: true` for scraping. it handles:
-- navigator property spoofing
-- webgl fingerprint randomization
-- automatic captcha solving
-- residential proxy routing
+stealth mode automatically adds a recaptcha solver and residential proxy to your browsers. use it for any site with bot detection.
 
 ```typescript
 const browser = await kernel.browsers.create({ stealth: true });
@@ -56,92 +17,85 @@ const browser = await kernel.browsers.create({ stealth: true });
 
 ## proxies
 
-for sites with IP-based blocking, add a dedicated proxy. quality ranking for bot detection avoidance:
+proxy quality for bot detection avoidance, best to worst:
+- **mobile** — highest quality, most expensive
+- **residential** — good for most sites (included with stealth mode)
+- **ISP** — dedicated IPs, good balance
+- **datacenter** — cheapest, most likely to be blocked
 
-1. **mobile** — highest quality, mobile IP ranges
-2. **residential** — home ISP IPs, very hard to detect
-3. **ISP** — datacenter IPs registered to ISPs
-4. **datacenter** — cheapest, most likely to be blocked
+## scraping patterns
 
-```typescript
-const browser = await kernel.browsers.create({
-  stealth: true,
-  proxy_id: "your-proxy-id",
-});
-```
-
-stealth mode already includes a residential proxy. add a dedicated proxy only if you need geo-targeting or the default proxy isn't sufficient.
-
-## handling dynamic content
-
-### wait for elements
+### extract structured data
 
 ```typescript
-await page.waitForSelector(".product-list .item", { timeout: 10000 });
-await page.goto(url, { waitUntil: "networkidle" });
+await page.goto("https://example.com/products");
+await page.waitForSelector(".product-card");
 
-// wait for a specific API response
-const response = await page.waitForResponse(resp =>
-  resp.url().includes("/api/products") && resp.status() === 200
+const products = await page.$$eval(".product-card", cards =>
+  cards.map(card => ({
+    name: card.querySelector("h2")?.textContent?.trim(),
+    price: card.querySelector(".price")?.textContent?.trim(),
+    url: card.querySelector("a")?.href,
+  }))
 );
-const data = await response.json();
+
+return products;
 ```
 
-### infinite scroll
-
-```typescript
-async function scrollToBottom(page) {
-  let previousHeight = 0;
-  while (true) {
-    const currentHeight = await page.evaluate(() => document.body.scrollHeight);
-    if (currentHeight === previousHeight) break;
-    previousHeight = currentHeight;
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await page.waitForTimeout(1500);
-  }
-}
-```
-
-### pagination
+### handle pagination
 
 ```typescript
 const allItems = [];
-let pageNum = 1;
+let hasNext = true;
 
-while (true) {
-  await page.goto(`https://example.com/items?page=${pageNum}`, {
-    waitUntil: "networkidle",
-  });
-
+while (hasNext) {
   const items = await page.$$eval(".item", els =>
-    els.map(el => el.textContent?.trim())
+    els.map(e => e.textContent?.trim())
   );
-
-  if (items.length === 0) break;
   allItems.push(...items);
-  pageNum++;
-  await page.waitForTimeout(1000 + Math.random() * 1000);
+
+  const nextBtn = await page.$("a.next-page");
+  if (nextBtn) {
+    await nextBtn.click();
+    await page.waitForLoadState("networkidle");
+  } else {
+    hasNext = false;
+  }
 }
+
+return allItems;
+```
+
+### handle infinite scroll
+
+```typescript
+let previousHeight = 0;
+while (true) {
+  const currentHeight = await page.evaluate(() => document.body.scrollHeight);
+  if (currentHeight === previousHeight) break;
+  previousHeight = currentHeight;
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.waitForTimeout(2000);
+}
+
+return await page.$$eval(".item", els => els.map(e => e.textContent));
 ```
 
 ## scaling with concurrent browsers
 
-spin up multiple browsers in parallel. kernel handles the infra — you just create and connect.
+launch multiple browsers for parallel scraping:
 
 ```typescript
-const urls = ["https://example.com/1", "https://example.com/2", "https://example.com/3"];
+const urls = ["https://site.com/1", "https://site.com/2", "https://site.com/3"];
 
 const results = await Promise.all(
-  urls.map(async url => {
-    const browser = await kernel.browsers.create({
-      stealth: true,
-      timeout_seconds: 60,
-    });
+  urls.map(async (url) => {
+    const browser = await kernel.browsers.create({ stealth: true });
     const pw = await chromium.connectOverCDP(browser.cdp_ws_url);
     const page = pw.contexts()[0].pages()[0];
 
     try {
-      await page.goto(url, { waitUntil: "networkidle" });
+      await page.goto(url);
       return await page.title();
     } finally {
       await pw.close();
@@ -151,33 +105,20 @@ const results = await Promise.all(
 );
 ```
 
-for high-volume scraping, use browser pools to pre-warm browsers and cut startup latency even further.
+## long-running scrapes
 
-## extracting structured data
-
-### tables
+kernel supports sessions up to 72 hours. no charges for idle time — you can pause overnight and resume the next day from the same point.
 
 ```typescript
-const tableData = await page.$$eval("table tbody tr", rows =>
-  rows.map(row => {
-    const cells = row.querySelectorAll("td");
-    return Array.from(cells).map(cell => cell.textContent?.trim());
-  })
-);
+const browser = await kernel.browsers.create({
+  stealth: true,
+  timeout_seconds: 259200, // 72 hours
+});
 ```
 
-### JSON-LD / structured data
-
-```typescript
-const structuredData = await page.$$eval(
-  'script[type="application/ld+json"]',
-  scripts => scripts.map(s => JSON.parse(s.textContent || "{}"))
-);
-```
-
-## respectful scraping
-
-- add delays between requests
-- respect `robots.txt`
-- set reasonable concurrency limits
-- kernel doesn't charge for idle time, but clean up browsers when done
+## tips
+- always use stealth mode for scraping — it's on by default with recaptcha solving
+- use profiles to stay logged in across scraping sessions
+- set reasonable timeouts — don't leave browsers running forever
+- respect rate limits — add delays between requests
+- clean up browsers in finally blocks

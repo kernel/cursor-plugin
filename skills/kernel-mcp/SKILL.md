@@ -3,50 +3,45 @@ name: kernel-mcp
 description: manage cloud browsers, take screenshots, run playwright scripts, and manage browser profiles using kernel's MCP tools. use when the kernel MCP server is connected.
 ---
 
-# kernel mcp tools
+# kernel MCP tools
 
-when the kernel mcp server is connected, you can create, automate, and manage cloud browsers directly. browsers spin up in <30ms.
+when the kernel MCP server is connected, you have direct access to cloud browser management. create, automate, and manage browsers without writing SDK code.
 
 ## tools
 
-**browsers:**
-- `create_browser` — launch a cloud browser. returns session ID, CDP websocket URL, and live view URL.
-- `get_browser` / `list_browsers` — check browser status
-- `delete_browser` — terminate a browser session
+### browser management
+- **create_browser** — launch a cloud browser. returns session ID, CDP websocket URL, and live view URL. supports stealth, proxies, profiles, viewports, headless mode.
+- **get_browser** / **list_browsers** — inspect browser sessions
+- **delete_browser** — terminate a browser and free resources
 
-**automation:**
-- `execute_playwright_code` — run playwright/typescript against a browser. `page` object is already in scope. return values come back as the result.
-- `take_screenshot` — capture the current browser state
+### automation
+- **execute_playwright_code** — run playwright/typescript against a browser. `page` object is pre-configured. return values come back as the result.
+- **take_screenshot** — capture the current browser state
 
-**profiles:**
-- `setup_profile` — create or update a profile via guided live browser session
-- `list_profiles` / `delete_profile` — manage saved profiles
+### profiles
+- **setup_profile** — create or update a browser profile with a guided live session
+- **list_profiles** / **delete_profile** — manage saved profiles
 
-**apps:**
-- `list_apps` — list deployed kernel apps
-- `invoke_action` — execute an app action
-- `get_deployment` / `list_deployments` — check deployment status
-- `get_invocation` — check action results
+### apps
+- **list_apps** — list deployed kernel apps
+- **invoke_action** — execute an action on a deployed app
+- **get_deployment** / **list_deployments** — check deployment status
+- **get_invocation** — check action results
 
-**docs:**
-- `search_docs` — search kernel documentation
+### docs
+- **search_docs** — search kernel documentation
 
-## common patterns
+## common workflows
 
-### create → automate → screenshot → delete
+### browse a website
+1. `create_browser` with `stealth: true` if the site has bot detection
+2. `execute_playwright_code` to navigate and interact
+3. `take_screenshot` to verify
+4. `delete_browser` to clean up
 
-```
-1. create_browser with stealth: true, timeout_seconds: 300
-2. execute_playwright_code to navigate and interact
-3. take_screenshot to verify
-4. delete_browser to clean up
-```
+### execute playwright code
 
-always delete when done. always set timeout_seconds as a safety net.
-
-### execute_playwright_code
-
-`page` is already in scope. just write playwright code and return what you need:
+the `page` object is already in scope:
 
 ```typescript
 await page.goto("https://news.ycombinator.com");
@@ -56,36 +51,20 @@ const titles = await page.$$eval(".titleline > a", els =>
 return titles;
 ```
 
-```typescript
-await page.goto("https://example.com/login");
-await page.fill("#email", "user@example.com");
-await page.fill("#password", "pass");
-await page.click('button[type="submit"]');
-await page.waitForURL("**/dashboard");
-return await page.title();
-```
+### use profiles for persistent sessions
+1. `setup_profile` with a name — opens a live browser for you to log in manually
+2. `create_browser` with `profile_name` to reuse the session
+3. the browser starts already logged in
 
-use this for quick, self-contained tasks. for complex multi-step flows, write sdk code instead.
-
-### profiles for persistent sessions
-
-profiles let agents log in once and stay logged in. kernel manages auth so you don't have to.
-
-1. `setup_profile` with a name — opens a live browser for login
-2. log in through the live view
-3. create future browsers with `profile_name` to reuse the session
-
-### stealth mode
-
-stealth mode automatically adds a recaptcha solver and residential proxy. use `stealth: true` for any real website. most production sites have bot detection.
-
-for sites with aggressive detection, create a proxy first (`residential` or `mobile` type), then pass `proxy_id` along with `stealth: true`.
+### scrape with stealth
+1. `create_browser` with `stealth: true` — automatically adds recaptcha solver + residential proxy
+2. `execute_playwright_code` to extract data
+3. `delete_browser` when done
 
 ## tips
-
-- use `stealth: true` by default for real websites
-- always set `timeout_seconds` — sessions can run up to 72 hours max
-- delete browsers when done, don't just rely on timeouts
-- use `execute_playwright_code` for quick tasks, sdk for complex flows
-- take screenshots to verify page state before extracting data
-- use `search_docs` when you need help with a specific kernel feature
+- always call `delete_browser` when done — don't leave browsers running
+- use `stealth: true` for any site with bot detection
+- set `timeout_seconds` as a safety net (default is 60s, max is 72h)
+- use `headless: true` for faster execution when you don't need live view
+- profiles save cookies and localStorage — use them to avoid re-authenticating
+- no charges for idle time — you only pay when browsers are doing work
