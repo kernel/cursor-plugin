@@ -1,6 +1,6 @@
-# kernel browse
+# kernel
 
-browser infrastructure for AI agents and web automations. cloud browsers in <30ms, stealth mode, managed auth, and playwright execution — right from cursor.
+browser infrastructure for AI agents and web automations. cloud browsers in <30ms, anti-bot stealth mode, managed auth, playwright execution, and a serverless app platform — no local chrome needed.
 
 trusted by 3,000+ teams.
 

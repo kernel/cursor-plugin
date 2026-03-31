@@ -1,8 +1,8 @@
 {
-  "name": "kernel-browse",
-  "displayName": "Kernel Browse",
+  "name": "kernel",
+  "displayName": "Kernel",
   "version": "1.0.0",
-  "description": "browser infrastructure for AI agents and web automations. cloud browsers in <30ms, anti-bot stealth mode, managed auth, reusable sessions, and playwright execution — no local chrome needed.",
+  "description": "browser infrastructure for AI agents and web automations. cloud browsers in <30ms, anti-bot stealth mode, managed auth, playwright execution, and a serverless app platform — no local chrome needed.",
   "author": {
     "name": "Kernel",
     "email": "support@onkernel.com"
