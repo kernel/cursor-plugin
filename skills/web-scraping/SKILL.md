@@ -105,6 +105,26 @@ const results = await Promise.all(
 );
 ```
 
+## browser pools for high-throughput scraping
+
+pre-warm a pool of browsers for instant acquisition. no cold-start latency.
+
+```typescript
+const pool = await kernel.pools.create({
+  name: "scraper-pool",
+  size: 10,
+  stealth: true,
+  proxy_id: "residential-proxy-id",
+});
+
+// acquire, scrape, release — browsers recycle instantly
+for (const url of urls) {
+  const browser = await kernel.pools.acquire(pool.id);
+  // scrape...
+  await kernel.pools.release(pool.id, browser.session_id);
+}
+```
+
 ## long-running scrapes
 
 kernel supports sessions up to 72 hours. no charges for idle time — you can pause overnight and resume the next day from the same point.
@@ -122,3 +142,4 @@ const browser = await kernel.browsers.create({
 - set reasonable timeouts — don't leave browsers running forever
 - respect rate limits — add delays between requests
 - clean up browsers in finally blocks
+- use browser pools for high-volume scraping to eliminate cold-start latency

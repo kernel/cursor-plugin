@@ -23,7 +23,14 @@
     "ai-agents",
     "screenshots",
     "stealth",
-    "headless"
+    "headless",
+    "typescript-sdk",
+    "python-sdk",
+    "authentication",
+    "managed-auth",
+    "computer-use",
+    "puppeteer",
+    "cdp"
   ],
   "category": "developer-tools",
   "tags": [

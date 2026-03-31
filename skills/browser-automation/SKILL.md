@@ -110,6 +110,46 @@ const result = await kernel.executePlaywrightCode({
 });
 ```
 
+## browser pools
+
+pre-warm browsers for instant acquisition. useful for high-throughput scraping or latency-sensitive workflows.
+
+```typescript
+// create a pool of 5 stealth browsers
+const pool = await kernel.pools.create({
+  name: "scraping-pool",
+  size: 5,
+  stealth: true,
+});
+
+// acquire a browser instantly (already running)
+const browser = await kernel.pools.acquire(pool.id);
+
+// use it...
+const pw = await chromium.connectOverCDP(browser.cdp_ws_url);
+
+// release back to pool when done (browser gets recycled)
+await kernel.pools.release(pool.id, browser.session_id);
+```
+
+## computer use (CUA)
+
+control browsers at the OS level — mouse clicks, keyboard input, screenshots. useful for computer-use agents (anthropic, openai).
+
+```typescript
+// take a screenshot
+const screenshot = await kernel.computer.captureScreenshot(browser.session_id);
+
+// click at coordinates
+await kernel.computer.clickMouse(browser.session_id, { x: 100, y: 200 });
+
+// type text
+await kernel.computer.typeText(browser.session_id, { text: "hello world" });
+
+// press keys
+await kernel.computer.pressKey(browser.session_id, { keys: ["Return"] });
+```
+
 ## live view
 
 you can view sessions live and record them as mp4s for debugging. live view lets you watch browsers in real time to resolve errors or take human-in-the-loop approval steps.

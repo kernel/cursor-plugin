@@ -20,6 +20,9 @@ available tools:
 - **browser-automation** — patterns for building browser automations with the kernel sdk and playwright
 - **kernel-mcp** — guide for using kernel's mcp tools effectively
 - **web-scraping** — scraping patterns with stealth mode and proxies
+- **kernel-typescript-sdk** — typescript sdk patterns: playwright, CDP connections, stagehand integration, deployable apps
+- **kernel-python-sdk** — python sdk patterns: playwright, browser-use integration, async context managers, deployable apps
+- **managed-auth** — authenticate AI agents across websites with persistent login sessions
 
 ### rules
 - **kernel-best-practices** — always clean up browsers, use stealth for bot detection, handle errors
