@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" width="320" height="320">
-  <rect width="320" height="320" fill="#84CC16"/>
-  <g transform="translate(160, 148)" text-anchor="middle">
-    <text font-family="'Arial Rounded MT Bold', 'Nunito Black', 'Varela Round', Arial, sans-serif" font-weight="900" font-size="108" fill="#1a1a1a" letter-spacing="2">
-      <tspan x="0" dy="-8">KR</tspan>
-      <tspan x="0" dy="105">NL</tspan>
-    </text>
-  </g>
-</svg>

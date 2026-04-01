@@ -10,7 +10,7 @@
   "homepage": "https://kernel.sh",
   "repository": "https://github.com/kernel/cursor-plugin",
   "license": "MIT",
-  "logo": "assets/logo.svg",
+  "logo": "assets/logo.png",
   "keywords": [
     "browse",
     "browser",
