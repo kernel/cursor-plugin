@@ -1,44 +1,44 @@
-# kernel
+# KERNEL
 
-browser infrastructure for AI agents and web automations. cloud browsers in <30ms, anti-bot stealth mode, managed auth, playwright execution, and a serverless app platform — no local chrome needed.
+cloud browsers for your agent, served over KERNEL's hosted mcp server. your agent launches stealth chromium sessions in <30ms, drives them with playwright, a persistent browser repl, or computer-use actions, reuses logged-in profiles and managed auth connections, and records replays.
 
-trusted by 3,000+ teams.
+## install
 
-## what's included
+1. open **cursor settings → plugins**.
+2. search for **KERNEL**.
+3. click **install**, then sign in to KERNEL when prompted.
 
-### mcp server
-connects cursor to kernel's cloud browser platform. browsers spin up in the cloud in <30ms — no local chrome needed.
+## what's inside
 
-available tools:
-- **create_browser** — launch cloud browsers with stealth mode, proxies, custom viewports, and profiles
-- **execute_playwright_code** — run playwright/typescript against any browser session
-- **take_screenshot** — capture browser screenshots
-- **setup_profile** — save and reuse browser sessions with persistent cookies and logins
-- **search_docs** — search kernel documentation
+| component | path | purpose |
+|---|---|---|
+| mcp server | `mcp.json` | our hosted mcp server at `https://mcp.onkernel.com/mcp` (streamable http) |
+| skill | `skills/kernel-mcp/SKILL.md` | when and how the agent should use the KERNEL mcp tools |
 
-### skills
-- **browser-automation** — patterns for building browser automations with the kernel sdk and playwright
-- **kernel-mcp** — guide for using kernel's mcp tools effectively
-- **web-scraping** — scraping patterns with stealth mode and proxies
-- **kernel-typescript-sdk** — typescript sdk patterns: playwright, CDP connections, stagehand integration, deployable apps
-- **kernel-python-sdk** — python sdk patterns: playwright, browser-use integration, async context managers, deployable apps
-- **managed-auth** — authenticate AI agents across websites with persistent login sessions
+## what the agent can do
 
-### rules
-- **kernel-best-practices** — always clean up browsers, use stealth for bot detection, handle errors
+| category | tools |
+|---|---|
+| session lifecycle | `manage_browsers` creates, lists, updates, and deletes browser sessions and reads their telemetry. `manage_browser_pools` keeps pre-warmed browsers ready to acquire |
+| driving a browser | `execute_playwright_code`, `browser_repl`, `computer_action`, `webmcp`, `browser_curl`, and `exec_command` |
+| state and auth | `manage_profiles` saves cookies and local storage. `manage_auth_connections` runs managed auth for third-party sites. `manage_proxies` and `manage_extensions` configure proxies and chrome extensions |
+| other | `manage_replays` records mp4 replays (paid plans). `manage_apps` invokes KERNEL apps. `search_docs` searches our documentation |
 
-## setup
+the hosted server is the source of truth for tool names and schemas.
 
-1. install from the cursor marketplace
-2. authenticate with your kernel account (oauth — opens in browser)
-3. start using kernel tools in cursor agent mode
+## auth and network access
 
-no api key needed for setup — oauth handles auth automatically. for CI/CD or headless environments, use an api key:
+the plugin carries no api key. when it connects, you sign in to KERNEL over oauth 2.1 in your browser. during authorization you can grant org-wide access or limit it to one KERNEL project.
+
+the plugin only talks to `https://mcp.onkernel.com`. it runs no local code, hooks, or install scripts. browsers run in our cloud and bill to the KERNEL account you sign in with.
+
+for ci or other headless setups, you can skip oauth and pass an api key instead:
 
 ```json
 {
   "mcpServers": {
     "kernel": {
+      "type": "http",
       "url": "https://mcp.onkernel.com/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_KERNEL_API_KEY"
@@ -48,12 +48,12 @@ no api key needed for setup — oauth handles auth automatically. for CI/CD or h
 }
 ```
 
-## get started
+the mcp server is open source: [kernel/kernel-mcp-server](https://github.com/kernel/kernel-mcp-server).
 
-- sign up at [kernel.sh](https://kernel.sh)
-- read the [docs](https://kernel.sh/docs)
-- check out the [typescript sdk](https://github.com/onkernel/kernel-typescript-sdk) and [python sdk](https://github.com/onkernel/kernel-python-sdk)
-- open source browser image: [kernel-images](https://github.com/onkernel/kernel-images)
+## docs
+
+- docs: https://kernel.sh/docs
+- sign up: https://kernel.sh
 
 ## license
 

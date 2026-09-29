@@ -1,7 +1,9 @@
 {
   "mcpServers": {
     "kernel": {
-      "url": "https://mcp.onkernel.com/mcp"
+      "type": "http",
+      "url": "https://mcp.onkernel.com/mcp",
+      "placement": "server"
     }
   }
 }
