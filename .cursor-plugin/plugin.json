@@ -1,46 +1,28 @@
 {
   "name": "kernel",
-  "displayName": "Kernel",
-  "version": "1.0.0",
-  "description": "browser infrastructure for AI agents and web automations. cloud browsers in <30ms, anti-bot stealth mode, managed auth, playwright execution, and a serverless app platform — no local chrome needed.",
+  "displayName": "KERNEL",
+  "version": "1.1.0",
+  "description": "cloud browsers for your agent. KERNEL launches stealth chromium sessions in <30ms through our hosted mcp server. drive them with playwright, a persistent browser repl, or computer-use actions, reuse logged-in profiles and managed auth, and record replays.",
   "author": {
-    "name": "Kernel",
+    "name": "KERNEL",
     "email": "support@onkernel.com"
   },
   "homepage": "https://kernel.sh",
   "repository": "https://github.com/kernel/cursor-plugin",
   "license": "MIT",
-  "logo": "assets/logo.png",
+  "logo": "assets/logo.svg",
   "keywords": [
-    "browse",
-    "browser",
-    "browser-automation",
-    "web-scraping",
-    "scrape",
-    "playwright",
-    "cloud-browser",
-    "mcp",
-    "ai-agents",
-    "screenshots",
-    "stealth",
-    "headless",
-    "typescript-sdk",
-    "python-sdk",
-    "authentication",
-    "managed-auth",
-    "computer-use",
-    "puppeteer",
-    "cdp"
+    "kernel browser",
+    "kernel browsers",
+    "kernel cloud browser",
+    "kernel mcp"
   ],
   "category": "developer-tools",
   "tags": [
-    "browse",
-    "browser-automation",
-    "cloud-browsers",
-    "web-scraping",
-    "mcp",
-    "developer-tools"
+    "kernel",
+    "cloud browsers",
+    "mcp"
   ],
   "skills": "./skills/",
-  "rules": "./rules/"
+  "mcpServers": "./mcp.json"
 }

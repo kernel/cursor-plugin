@@ -1,116 +1,63 @@
 ---
 name: kernel-mcp
-description: manage cloud browsers, take screenshots, run playwright scripts, and manage browser profiles using kernel's MCP tools. use when the kernel MCP server is connected.
+description: use KERNEL cloud browsers through the KERNEL mcp server. create stealth browser sessions, automate pages with playwright, the browser repl, or computer-use actions, reuse logged-in profiles and managed auth connections, and record replays. use whenever a task needs a real browser, a site that blocks bots, a logged-in session, or screenshots of a live page.
 ---
 
-# kernel MCP tools
+# KERNEL mcp
 
-when the kernel MCP server is connected, you have direct access to cloud browser management. create, automate, and manage browsers without writing SDK code.
+the KERNEL mcp server gives you hosted chromium sessions. nothing runs on the user's machine. every browser is a cloud vm that you create, drive, and delete through mcp tools.
+
+on first use, the user signs in to KERNEL over oauth in their browser. during authorization they can grant org-wide access or limit it to one KERNEL project.
 
 ## tools
 
-### browser management
-- **create_browser** — launch a cloud browser. returns session ID, CDP websocket URL, and live view URL. supports stealth, proxies, profiles, viewports, headless mode.
-- **get_browser** / **list_browsers** — inspect browser sessions
-- **delete_browser** — terminate a browser and free resources
+### session lifecycle
+- **manage_browsers**: `create`, `list`, `get`, `update`, `delete`, and `get_telemetry` for browser sessions. `create` returns a session id, cdp url, and live view url. options include `stealth`, `headless`, `proxy_id`, `profile_name`, `viewport_width`/`viewport_height`, and `timeout_seconds`.
+- **manage_browser_pools**: pre-warmed pools for high-throughput work. create a pool, `acquire` a browser, and `release` it when done.
 
-### automation
-- **execute_playwright_code** — run playwright/typescript against a browser. `page` object is pre-configured. return values come back as the result.
-- **take_screenshot** — capture the current browser state
+### driving a browser
+- **execute_playwright_code**: run playwright typescript against an existing session. `page` is already in scope. return a value to get it back.
+- **browser_repl**: persistent javascript repl inside the browser vm with playwright, patchright, and raw cdp. state survives across calls. start with `repl.help()`.
+- **computer_action**: mouse, keyboard, scroll, and screenshot actions. batch several actions per call and end with a screenshot.
+- **webmcp**: call structured tools a page exposes through webmcp. check for these before writing selectors for a site action.
+- **browser_curl**: send http requests from inside the browser session, using its cookies and network path.
+- **exec_command**: run shell commands inside the browser vm, for example to check dns, files, or logs.
 
-### computer use
-- **computer_action** — execute mouse, keyboard, and screenshot actions on a browser session. supports click, move, type, press keys, scroll, drag, screenshots. actions can be batched for lower latency. always include a screenshot as the last action to see the result.
+### state and auth
+- **manage_profiles**: saved cookies and local storage. `setup` opens a guided session so the user can log in once. pass `profile_name` to `manage_browsers` `create` to reuse it.
+- **manage_auth_connections**: managed auth for third-party sites. before a task that needs an account, `list` connections for the domain. if none is authenticated, `login` starts a hosted sign-in flow the user completes in their own browser, so credentials and mfa stay out of chat.
+- **manage_proxies**: datacenter, isp, residential, mobile, or custom proxies with country, state, or city targeting.
+- **manage_extensions**: list and manage uploaded chrome extensions.
 
-### shell access
-- **exec_command** — run shell commands inside a browser VM. returns stdout, stderr, exit code. use for reading files, checking DNS, testing connectivity, running custom scripts inside the browser environment.
+### other
+- **manage_replays**: `start` and `stop` mp4 recordings of a session (paid plans).
+- **manage_apps**: list apps, check deployment status, and invoke KERNEL apps.
+- **search_docs**: search the KERNEL documentation.
 
-### profiles
-- **setup_profile** — create or update a browser profile with a guided live session
-- **list_profiles** / **delete_profile** — manage saved profiles
+## workflows
 
-### browser pools
-- **manage_browser_pools** — manage pools of pre-warmed browser instances for fast acquisition. create pools with a target size, acquire browsers instantly from the pool, release them back when done.
+### browse or scrape a page
+1. `manage_browsers` `create` with `stealth: true` if the site has bot detection.
+2. `execute_playwright_code` to navigate and extract:
+   ```typescript
+   await page.goto("https://news.ycombinator.com");
+   return await page.$$eval(".titleline > a", els =>
+     els.slice(0, 10).map(e => e.textContent)
+   );
+   ```
+3. `manage_browsers` `delete` when finished.
 
-### proxies
-- **manage_proxies** — create and manage proxy configurations. supports datacenter, ISP, residential, mobile, and custom proxies with geo-targeting (country, state, city).
+### work on a site that needs a login
+1. `manage_auth_connections` `list` with the site's domain.
+2. if a connection is `AUTHENTICATED`, create the browser with its `profile_name`. otherwise `create` a connection, run `login`, share the hosted url with the user, and `wait` until it completes.
+3. run the task, then delete the browser.
 
-### extensions
-- **manage_extensions** — list and manage uploaded browser extensions.
-
-### apps
-- **list_apps** — list deployed kernel apps
-- **invoke_action** — execute an action on a deployed app
-- **get_deployment** / **list_deployments** — check deployment status
-- **get_invocation** — check action results
-
-### docs
-- **search_docs** — search kernel documentation
-
-## prompts
-
-- **kernel-concepts** — explains kernel platform concepts. use when you need background on how kernel works.
-- **debug-browser-session** — helps debug browser session issues. use when a session is failing or behaving unexpectedly.
-
-## common workflows
-
-### browse a website
-1. `create_browser` with `stealth: true` if the site has bot detection
-2. `execute_playwright_code` to navigate and interact
-3. `take_screenshot` to verify
-4. `delete_browser` to clean up
-
-### execute playwright code
-
-the `page` object is already in scope:
-
-```typescript
-await page.goto("https://news.ycombinator.com");
-const titles = await page.$$eval(".titleline > a", els =>
-  els.slice(0, 10).map(e => e.textContent)
-);
-return titles;
-```
-
-### computer use (CUA)
-
-use `computer_action` for OS-level browser control — mouse, keyboard, screenshots:
-
-```
-1. computer_action: screenshot to see the current state
-2. computer_action: click_mouse at coordinates to interact
-3. computer_action: type_text to enter text
-4. computer_action: screenshot to verify
-```
-
-batch multiple actions in a single call for lower latency. always end with a screenshot.
-
-### use profiles for persistent sessions
-1. `setup_profile` with a name — opens a live browser for you to log in manually
-2. `create_browser` with `profile_name` to reuse the session
-3. the browser starts already logged in
-
-### scrape with stealth
-1. `create_browser` with `stealth: true` — automatically adds recaptcha solver + residential proxy
-2. `execute_playwright_code` to extract data
-3. `delete_browser` when done
-
-### use browser pools for high throughput
-1. `manage_browser_pools` action=create to set up a pool with target size
-2. `manage_browser_pools` action=acquire to get a browser instantly
-3. use the browser for your task
-4. `manage_browser_pools` action=release to return it to the pool
-
-### set up proxies
-1. `manage_proxies` action=create with type (residential, ISP, etc.) and geo-targeting
-2. `create_browser` with the proxy_id
-3. browser traffic routes through the proxy
+### visual or coordinate-based tasks
+1. `computer_action` with a `screenshot` to see the page.
+2. batch `click_mouse`, `type_text`, and `press_key`, ending with another `screenshot`.
 
 ## tips
-- always call `delete_browser` when done — don't leave browsers running
-- use `stealth: true` for any site with bot detection
-- set `timeout_seconds` as a safety net (default is 60s, max is 72h)
-- use `headless: true` for faster execution when you don't need live view
-- profiles save cookies and localStorage — use them to avoid re-authenticating
-- no charges for idle time — you only pay when browsers are doing work
-- use `computer_action` for visual/coordinate-based automation, `execute_playwright_code` for DOM-based automation
-- use `exec_command` to debug browser VM issues (check logs, DNS, connectivity)
+- delete browsers when you are done. set `timeout_seconds` as a backstop.
+- use `headless: true` when nobody needs the live view. it starts faster.
+- share the live view url when the user needs to watch or take over.
+- if a session misbehaves, `manage_browsers` `get_telemetry` works on active and deleted sessions.
